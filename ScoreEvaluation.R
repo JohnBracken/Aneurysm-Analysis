@@ -1,3 +1,12 @@
+#This code takes a spreadsheet of intracranial aneurysm data.  There are 23
+#columns describing the properties of the aneurysm and the patient (size, shape, number,
+#patient gender, etc.)
+#The code produces all possible combinations of 5 columns from the table of 23 columns
+#and counts how many times specific sets of values come up for each combination of
+#5 columns.  The idea here is to see which vairables, or combination thereof, could
+#be important to predict whether or not an aneurysm could rupture.
+#Aneurysm shape, location in the neurovascular anatomy, and patient gender seem
+#to be important, but other factors matter as well.  
 
 
 #dplyr library
@@ -9,11 +18,11 @@ setwd("C:/Users/310084562/Documents/Aneurysm_Measurement_project/Aneurysm_Machin
 #Read in the data from the csv file.
 aneurysm_data <- read.csv("Ruptured_23_columns.csv", stringsAsFactors = T, header=T)
 aneurysm_data$Aneurysm_count_DC <- as.factor(aneurysm_data$Aneurysm_count_DC)
+
+
 #Get the names of the columns from the data.
 columns <- names(aneurysm_data[2:ncol(aneurysm_data)])
-#columns <- names(aneurysm_data[2:6])
 
-#for(j in 1:(ncol(aneurysm_data) -1 )){
   
 #Create a list of all possible combinations of 5 columns from the dataset.
 column_combos <- combn(columns,5, simplify = FALSE)
@@ -29,19 +38,9 @@ for(i in 1:length(column_combos)){
   
     #Create a frequency table showing the number of counts of each row for the 5 columns chosen
     #from the data.  
-    results <- aggregate(aneurysm_data$Ruptured_DC, by=aneurysm_data[column_combos[[i]]], length)
+    results <- aggregate(aneurysm_data$Ruptured_DC, 
+                by=aneurysm_data[column_combos[[i]]], length)
     
-    #phases_data <- aneurysm_data[,1:6]
-    #results <- aggregate(Ruptured_DC~., data=phases_data,length)
-
-    #Find row indices containing all rows that have no zeros.  The 1 indicates the
-    #margin, which means applying the function by row.  This returns a logical
-    #result for each row.  A vector value is true is a row contains no zeros
-    #and false if it contains at least one zero.  Filter the results
-    #using the logical vector to get rows that contain no zeros.
-    #results[results== 0] <- NA
-    
-    #results <- na.omit(results)
 
 
     #change the count column name.
@@ -56,10 +55,8 @@ for(i in 1:length(column_combos)){
     results <- results[order(-results$percentage),] 
     results <- results %>% filter(percentage > 0.1)
     
-    #results$Phases_total <- rowSums(results[1:5])
     
     
-
     #Append the new data frame to the list of data frames of five columns.
     combo_list[[i]] <- results 
     
@@ -109,15 +106,6 @@ if((length(which(factors==1))<3) | (nrow(clean_data[[i]])==1)){
 
 }
 
-
-
-#Write the list of data frames of columns to a .csv file.
-#lapply(combo_list, function(x) write.table( data.frame(x), paste0(5,"_Column_Combinations",".csv"), append= T, row.names=F, sep=',' ))
-#write.csv(results,"Phases_score_eval.csv", row.names=F)
-#}
-
-#Write the clean data to a file.
-#lapply(clean_data, function(x) write.table( data.frame(x), paste0(5,"_Column_Combinations_clean",".csv"), append= T, row.names=F, sep=',' ))
-
-#Write the filtered data to a file.
-lapply(filtered_data, function(x) write.table( data.frame(x), paste0(5,"_Column_Combinations_filtered",".csv"), append= T, row.names=F, sep=',' ))
+#Write the filtered data to a .csv file.
+lapply(filtered_data, function(x) write.table( data.frame(x), 
+paste0(5,"_Column_Combinations_filtered",".csv"), append= T, row.names=F, sep=',' ))
